@@ -17,7 +17,13 @@ export default function Sidebar() {
         <p className="mb-4">{nombre}</p>
         <nav className="flex flex-col gap-2">
           <Link to="/" className="hover:bg-gray-700 p-2 rounded">Dashboard</Link>
+          <Link to="/mapa" className="hover:bg-gray-700 p-2 rounded">Mapa</Link>
           <Link to="/usuarios" className="hover:bg-gray-700 p-2 rounded">Usuarios</Link>
+          <Link to="/adelantos" className="hover:bg-gray-700 p-2 rounded">Adelantos</Link>
+          <Link to="/operarios" className="hover:bg-gray-700 p-2 rounded">Operarios</Link>
+          <Link to="/mis-adelantos" className="hover:bg-gray-700 p-2 rounded">Mis Adelantos</Link>
+          <Link to="/descuentos" className="hover:bg-gray-700 p-2 rounded">Descuentos</Link>
+
         </nav>
       </div>
       <button
