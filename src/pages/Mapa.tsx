@@ -2,18 +2,15 @@ import { useEffect } from "react"
 import L from "leaflet"
 import "leaflet-routing-machine"
 // @ts-ignore
-import SockJS from 'sockjs-client/dist/sockjs';
+import SockJS from "sockjs-client/dist/sockjs"
 import { Client } from "@stomp/stompjs"
-// en tu main.tsx o Mapa.tsx
 import "leaflet/dist/leaflet.css"
-
 
 export default function Mapa() {
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) return
 
-    // Inicializar el mapa
     const map = L.map("map").setView([-12.0464, -77.0428], 19)
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -32,6 +29,8 @@ export default function Mapa() {
     const idToColor: Record<number, string> = {}
     let colorIndex = 0
 
+    const ubicacionQueue: Record<number, { latitud: number; longitud: number }[]> = {}
+
     const getColorForId = (id: number) => {
       if (!idToColor[id]) {
         idToColor[id] = colorList[colorIndex % colorList.length]
@@ -40,20 +39,18 @@ export default function Mapa() {
       return idToColor[id]
     }
 
-    // Conectar al WebSocket
-    const socket = new SockJS(
-      `https://api-transporte-98xe.onrender.com/ws?token=${encodeURIComponent(token)}`
-    )
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log("📥 Conectado al WebSocket")
-        stompClient.subscribe("/topic/ubicacion", (message) => {
-          const data = JSON.parse(message.body)
-          const { id, latitud, longitud } = data
+    let animacionInterval: ReturnType<typeof setInterval> | null = null
+    let primerMensajeRecibido = false
 
-          const color = getColorForId(id)
+    const iniciarAnimacion = () => {
+      if (animacionInterval !== null) return // evitar múltiples timers
+
+      animacionInterval = setInterval(() => {
+        for (const id in ubicacionQueue) {
+          const cola = ubicacionQueue[id]
+          if (cola.length === 0) continue
+
+          const { latitud, longitud } = cola.shift()!
 
           if (markers[id]) {
             markers[id].setLatLng([latitud, longitud])
@@ -62,7 +59,7 @@ export default function Mapa() {
               radius: 10,
               color: "black",
               weight: 2,
-              fillColor: color,
+              fillColor: getColorForId(Number(id)),
               fillOpacity: 0.9,
             })
               .addTo(map)
@@ -70,6 +67,43 @@ export default function Mapa() {
               .openPopup()
 
             markers[id] = newCircle
+          }
+        }
+      }, 400)
+    }
+
+    const socket = new SockJS(
+      `https://api-transporte-98xe.onrender.com/ws?token=${encodeURIComponent(token)}`
+    )
+
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        console.log("📥 Conectado al WebSocket")
+
+        stompClient.subscribe("/topic/ubicacion", (message) => {
+          const now = new Date()
+          const hora = now.toLocaleTimeString("es-PE", { hour12: false })
+          console.log(`📦 ubicaciones recibidas - ${hora}`)
+
+          const data = JSON.parse(message.body)
+          const { id, ubicaciones } = data
+
+          if (!ubicacionQueue[id]) {
+            ubicacionQueue[id] = []
+          }
+
+          ubicacionQueue[id].push(...ubicaciones)
+
+          // Espera de 5 segundos solo la primera vez
+          if (!primerMensajeRecibido) {
+            primerMensajeRecibido = true
+            console.log("🕐 Esperando 5 segundos para iniciar animación...")
+            setTimeout(() => {
+              console.log("🚚 Iniciando animación de camiones")
+              iniciarAnimacion()
+            }, 5000)
           }
         })
       },
@@ -83,18 +117,15 @@ export default function Mapa() {
     return () => {
       stompClient.deactivate()
       map.remove()
+      if (animacionInterval) clearInterval(animacionInterval)
     }
   }, [])
 
-return (
-  <div className="flex h-screen">
-    {/* Sidebar si lo deseas */}
-    {/* <Sidebar /> */}
-
-    <div className="flex-1 p-2">
-      <div id="map" className="h-[85vh] w-full rounded-lg shadow-lg" />
+  return (
+    <div className="flex h-screen">
+      <div className="flex-1 p-2">
+        <div id="map" className="h-[85vh] w-full rounded-lg shadow-lg" />
+      </div>
     </div>
-  </div>
-)
-
+  )
 }
