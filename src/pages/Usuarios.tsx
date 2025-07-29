@@ -1,22 +1,26 @@
 import { useEffect, useState } from "react"
 
+type Rol = "ADMIN" | "CHOFER"
+
+type Usuario = {
+  id: number
+  nombreCompleto: string
+  username: string
+  rol: Rol
+}
+
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [nombreCompleto, setNombreCompleto] = useState("")
   const [username, setUsername] = useState("")
-  const [rol, setRol] = useState("CHOFER")
+  const [password, setPassword] = useState("")
+  const [repeatPassword, setRepeatPassword] = useState("")
+  const [rol, setRol] = useState<Rol>("CHOFER")
   const [editId, setEditId] = useState<number | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState("")
 
   const token = localStorage.getItem("token") || ""
-
-  type Usuario = {
-    id: number
-    nombreCompleto: string
-    username: string
-    rol: string
-  }
 
   const fetchUsuarios = async () => {
     try {
@@ -26,7 +30,6 @@ export default function Usuarios() {
         },
       })
       if (!res.ok) throw new Error("No se pudo obtener la lista de usuarios")
-
       const data = await res.json()
       setUsuarios(data.filter((u: Usuario) => u.rol === "CHOFER" || u.rol === "ADMIN"))
     } catch (err: any) {
@@ -42,6 +45,8 @@ export default function Usuarios() {
     setEditId(null)
     setNombreCompleto("")
     setUsername("")
+    setPassword("")
+    setRepeatPassword("")
     setRol("CHOFER")
     setShowModal(false)
     setError("")
@@ -54,16 +59,30 @@ export default function Usuarios() {
       return
     }
 
-    const method = editId ? "PATCH" : "POST"
-    const url = editId
-      ? `https://api-transporte-98xe.onrender.com/api/usuarios/${editId}`
-      : "https://api-transporte-98xe.onrender.com/api/usuarios"
+    const isEditing = !!editId
 
-    const payload = {
+    if (!isEditing && (!password || !repeatPassword)) {
+      setError("Debes ingresar y repetir la contraseña al crear")
+      return
+    }
+
+    if ((password || repeatPassword) && password !== repeatPassword) {
+      setError("Las contraseñas no coinciden")
+      return
+    }
+
+    const method = isEditing ? "PATCH" : "POST"
+    const url = isEditing
+      ? `https://api-transporte-98xe.onrender.com/api/usuarios/${editId}`
+      : "https://api-transporte-98xe.onrender.com/api/auth/register"
+
+    const payload: any = {
       nombreCompleto,
       username,
       rol,
     }
+
+    if (password) payload.password = password
 
     try {
       const res = await fetch(url, {
@@ -87,6 +106,8 @@ export default function Usuarios() {
     setNombreCompleto(u.nombreCompleto)
     setUsername(u.username)
     setRol(u.rol)
+    setPassword("")
+    setRepeatPassword("")
     setShowModal(true)
   }
 
@@ -125,6 +146,7 @@ export default function Usuarios() {
               <th className="py-2 px-4 text-left">Nombre</th>
               <th className="py-2 px-4 text-left">Usuario</th>
               <th className="py-2 px-4 text-left">Rol</th>
+              <th className="py-2 px-4 text-left">Contraseña</th>
               <th className="py-2 px-4 text-left">Acciones</th>
             </tr>
           </thead>
@@ -135,6 +157,7 @@ export default function Usuarios() {
                 <td className="py-2 px-4">{u.nombreCompleto}</td>
                 <td className="py-2 px-4">{u.username}</td>
                 <td className="py-2 px-4">{u.rol}</td>
+                <td className="py-2 px-4">••••••</td>
                 <td className="py-2 px-4 flex gap-2">
                   <button onClick={() => handleEdit(u)} className="bg-yellow-500 text-white px-3 py-1 rounded">
                     Editar
@@ -168,7 +191,21 @@ export default function Usuarios() {
                 onChange={(e) => setUsername(e.target.value)}
                 className="border p-2 rounded"
               />
-              <select value={rol} onChange={(e) => setRol(e.target.value)} className="border p-2 rounded">
+              <input
+                type="password"
+                placeholder={editId ? "Nueva contraseña (opcional)" : "Contraseña"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                type="password"
+                placeholder={editId ? "Repetir nueva contraseña" : "Repetir contraseña"}
+                value={repeatPassword}
+                onChange={(e) => setRepeatPassword(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <select value={rol} onChange={(e) => setRol(e.target.value as Rol)} className="border p-2 rounded">
                 <option value="CHOFER">CHOFER</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
