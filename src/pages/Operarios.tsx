@@ -9,6 +9,7 @@ export default function Operarios() {
   const [operarios, setOperarios] = useState<Operario[]>([])
   const [nombreCompleto, setNombreCompleto] = useState("")
   const [editId, setEditId] = useState<number | null>(null)
+  const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState("")
 
   const token = localStorage.getItem("token") || ""
@@ -30,9 +31,19 @@ export default function Operarios() {
     fetchOperarios()
   }, [])
 
+  const resetForm = () => {
+    setEditId(null)
+    setNombreCompleto("")
+    setShowModal(false)
+    setError("")
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!nombreCompleto.trim()) return
+    if (!nombreCompleto.trim()) {
+      setError("El nombre no puede estar vacío")
+      return
+    }
 
     const method = editId ? "PATCH" : "POST"
     const url = editId
@@ -51,8 +62,7 @@ export default function Operarios() {
         body,
       })
       if (!res.ok) throw new Error("Error al guardar operario")
-      setNombreCompleto("")
-      setEditId(null)
+      resetForm()
       fetchOperarios()
     } catch (err: any) {
       setError(err.message || "Error desconocido al guardar")
@@ -78,41 +88,22 @@ export default function Operarios() {
   const handleEdit = (op: Operario) => {
     setEditId(op.id)
     setNombreCompleto(op.nombreCompleto)
+    setShowModal(true)
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Listado de Operarios</h1>
-
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-
-      <form onSubmit={handleSubmit} className="mb-6 flex gap-2">
-        <input
-          type="text"
-          value={nombreCompleto}
-          onChange={(e) => setNombreCompleto(e.target.value)}
-          className="border p-2 rounded flex-1"
-          placeholder="Nombre del operario"
-        />
+    <div className="max-w-2xl mx-auto px-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Listado de Operarios</h1>
         <button
-          type="submit"
+          onClick={() => setShowModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          {editId ? "Actualizar" : "Crear"}
+          Crear Operario
         </button>
-        {editId && (
-          <button
-            type="button"
-            onClick={() => {
-              setEditId(null)
-              setNombreCompleto("")
-            }}
-            className="bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            Cancelar
-          </button>
-        )}
-      </form>
+      </div>
+
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <table className="min-w-full bg-white shadow rounded">
         <thead className="bg-gray-200 text-gray-700">
@@ -145,6 +136,37 @@ export default function Operarios() {
           ))}
         </tbody>
       </table>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">
+              {editId ? "Editar Operario" : "Crear Operario"}
+            </h2>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={nombreCompleto}
+                onChange={(e) => setNombreCompleto(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <div className="flex justify-end gap-2">
+                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+                  {editId ? "Actualizar" : "Crear"}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
