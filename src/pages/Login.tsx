@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-export const Login = () => {
+const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  const navigate = useNavigate() // <--- Añadir esto
+  const navigate = useNavigate()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +27,7 @@ export const Login = () => {
       localStorage.setItem("token", token)
       localStorage.setItem("nombreCompleto", user.nombreCompleto || "Usuario")
 
-      navigate("/") // <--- Redirigir al home
+      navigate("/")
     } catch (error) {
       setError("Error de red. Inténtalo más tarde.")
     }
@@ -62,3 +62,5 @@ export const Login = () => {
     </div>
   )
 }
+
+export default Login
