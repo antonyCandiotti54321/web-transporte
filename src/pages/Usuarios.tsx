@@ -54,6 +54,8 @@ export default function Usuarios() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("") // Limpiar errores previos
+    
     if (!nombreCompleto || !username || !rol) {
       setError("Todos los campos son obligatorios")
       return
@@ -93,11 +95,26 @@ export default function Usuarios() {
         },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error("Error al guardar usuario")
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        
+        // ✅ MANEJO MEJORADO DE ERRORES
+        if (res.status === 400 && typeof errorData === 'object' && !errorData.error) {
+          // Combinar todos los errores de validación en un string
+          const errorMessages = Object.values(errorData).join('. ')
+          setError(errorMessages)
+        } else {
+          // Error simple con campo "error" o error genérico
+          setError(errorData.error || "Error al guardar usuario")
+        }
+        return
+      }
+      
       resetForm()
       fetchUsuarios()
     } catch (err: any) {
-      setError(err.message || "Error desconocido al guardar")
+      setError("Error de conexión")
     }
   }
 
@@ -120,10 +137,14 @@ export default function Usuarios() {
           Authorization: `Bearer ${token}`,
         },
       })
-      if (!res.ok) throw new Error("Error al eliminar usuario")
+      if (!res.ok) {
+        const errorData = await res.json()
+        setError(errorData.error || "Error al eliminar usuario")
+        return
+      }
       fetchUsuarios()
     } catch (err: any) {
-      setError(err.message || "Error desconocido al eliminar")
+      setError("Error de conexión al eliminar")
     }
   }
 
@@ -176,6 +197,9 @@ export default function Usuarios() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
             <h2 className="text-xl font-bold mb-4">{editId ? "Editar Usuario" : "Crear Usuario"}</h2>
+            
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+            
             <form onSubmit={handleSubmit} className="grid gap-4">
               <input
                 type="text"
