@@ -10,7 +10,6 @@ type Adelanto = {
 }
 
 type Usuario = { id: number; nombre: string }
-
 type Operario = { id: number; nombre: string }
 
 export default function Adelantos() {
@@ -24,7 +23,10 @@ export default function Adelantos() {
   const [mensaje, setMensaje] = useState("")
   const [editId, setEditId] = useState<number | null>(null)
   const [showModal, setShowModal] = useState(false)
+
   const [error, setError] = useState("")
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+
   const token = localStorage.getItem("token") || ""
 
   const fetchAdelantos = async () => {
@@ -76,10 +78,14 @@ export default function Adelantos() {
     setMensaje("")
     setShowModal(false)
     setError("")
+    setFieldErrors({})
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+    setFieldErrors({})
+
     if (!usuarioId || !operarioId || !cantidad) {
       setError("Todos los campos son obligatorios")
       return
@@ -106,8 +112,21 @@ export default function Adelantos() {
         },
         body: JSON.stringify(payload),
       })
-      if (res.status === 403) throw new Error("No tienes permiso para realizar esta acción.")
-      if (!res.ok) throw new Error("Error al guardar adelanto")
+
+      if (!res.ok) {
+        const errorData = await res.json()
+
+        if (res.status === 400 && typeof errorData === "object") {
+          setFieldErrors(errorData)
+          const general = Object.values(errorData).join(".\n") + "."
+          setError(general)
+        } else {
+          setError(errorData.error || "Error al guardar adelanto")
+        }
+
+        return
+      }
+
       resetForm()
       fetchAdelantos()
     } catch (err: any) {
@@ -153,7 +172,7 @@ export default function Adelantos() {
         </button>
       </div>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <p className="text-red-500 mb-4 whitespace-pre-line">{error}</p>}
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white shadow rounded">
@@ -200,44 +219,63 @@ export default function Adelantos() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
             <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Crear Adelanto"}</h2>
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)} className="border p-2 rounded">
-                <option value="">Seleccione un Usuario</option>
-                {usuarios.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nombre}
-                  </option>
-                ))}
-              </select>
-              <select value={operarioId} onChange={(e) => setOperarioId(e.target.value)} className="border p-2 rounded">
-                <option value="">Seleccione un Operario</option>
-                {operarios.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.nombre}
-                  </option>
-                ))}
-              </select>
 
-              <input
-                type="number"
-                placeholder="Cantidad"
-                value={cantidad}
-                onChange={(e) => setCantidad(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Mensaje"
-                value={mensaje}
-                onChange={(e) => setMensaje(e.target.value)}
-                className="border p-2 rounded"
-              />
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div>
+                <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)} className="border p-2 rounded w-full">
+                  <option value="">Seleccione un Usuario</option>
+                  {usuarios.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.nombre}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.usuarioId && <p className="text-red-500 text-sm">{fieldErrors.usuarioId}</p>}
+              </div>
+
+              <div>
+                <select value={operarioId} onChange={(e) => setOperarioId(e.target.value)} className="border p-2 rounded w-full">
+                  <option value="">Seleccione un Operario</option>
+                  {operarios.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.nombre}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.operarioId && <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>}
+              </div>
+
+              <div>
+                <input
+                  type="number"
+                  placeholder="Cantidad"
+                  value={cantidad}
+                  onChange={(e) => setCantidad(e.target.value)}
+                  className="border p-2 rounded w-full"
+                />
+                {fieldErrors.cantidad && <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>}
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  placeholder="Mensaje"
+                  value={mensaje}
+                  onChange={(e) => setMensaje(e.target.value)}
+                  className="border p-2 rounded w-full"
+                />
+                {fieldErrors.mensaje && <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>}
+              </div>
 
               <div className="flex justify-end gap-2">
                 <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
                   {editId ? "Actualizar" : "Crear"}
                 </button>
-                <button type="button" onClick={resetForm} className="bg-gray-500 text-white px-4 py-2 rounded">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                >
                   Cancelar
                 </button>
               </div>
