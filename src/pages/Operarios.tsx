@@ -40,12 +40,14 @@ export default function Operarios() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+
     if (!nombreCompleto.trim()) {
       setError("El nombre no puede estar vacío")
       return
     }
 
-    const method = editId ? "PATCH" : "POST"
+    const method = editId ? "PUT" : "POST"
     const url = editId
       ? `https://api-transporte-98xe.onrender.com/api/operarios/${editId}`
       : "https://api-transporte-98xe.onrender.com/api/operarios"
@@ -61,7 +63,21 @@ export default function Operarios() {
         },
         body,
       })
-      if (!res.ok) throw new Error("Error al guardar operario")
+
+      if (!res.ok) {
+        const errorData = await res.json()
+
+        if (res.status === 400 && typeof errorData === "object") {
+          // Concatenar errores en líneas separadas
+          const errorMessages = Object.values(errorData).join(".\n") + "."
+          setError(errorMessages)
+        } else {
+          setError(errorData.error || "Error al guardar operario")
+        }
+
+        return
+      }
+
       resetForm()
       fetchOperarios()
     } catch (err: any) {
@@ -103,7 +119,7 @@ export default function Operarios() {
         </button>
       </div>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
 
       <table className="min-w-full bg-white shadow rounded">
         <thead className="bg-gray-200 text-gray-700">
@@ -143,6 +159,9 @@ export default function Operarios() {
             <h2 className="text-xl font-bold mb-4">
               {editId ? "Editar Operario" : "Crear Operario"}
             </h2>
+
+            {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
+
             <form onSubmit={handleSubmit} className="grid gap-4">
               <input
                 type="text"

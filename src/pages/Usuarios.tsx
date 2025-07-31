@@ -54,7 +54,7 @@ export default function Usuarios() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("") // Limpiar errores previos
+    setError("")
     
     if (!nombreCompleto || !username || !rol) {
       setError("Todos los campos son obligatorios")
@@ -99,13 +99,11 @@ export default function Usuarios() {
       if (!res.ok) {
         const errorData = await res.json()
         
-        // ✅ MANEJO MEJORADO DE ERRORES
         if (res.status === 400 && typeof errorData === 'object' && !errorData.error) {
-          // Combinar todos los errores de validación en un string
-          const errorMessages = Object.values(errorData).join('. ')
+          // Mostrar errores en líneas separadas
+          const errorMessages = Object.values(errorData).join('.\n') + '.'
           setError(errorMessages)
         } else {
-          // Error simple con campo "error" o error genérico
           setError(errorData.error || "Error al guardar usuario")
         }
         return
@@ -157,7 +155,7 @@ export default function Usuarios() {
         </button>
       </div>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white shadow rounded">
@@ -198,7 +196,7 @@ export default function Usuarios() {
           <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
             <h2 className="text-xl font-bold mb-4">{editId ? "Editar Usuario" : "Crear Usuario"}</h2>
             
-            {error && <p className="text-red-500 mb-4">{error}</p>}
+            {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
             
             <form onSubmit={handleSubmit} className="grid gap-4">
               <input
