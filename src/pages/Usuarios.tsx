@@ -157,24 +157,26 @@ export default function Usuarios() {
       const data = await res.json()
       
       // *** NUEVA LÓGICA: Verificar si se devolvió un nuevo token ***
-      if (data.newToken) {
-        // El usuario editó su propio perfil, actualizar token
-        console.log("✅ Token renovado automáticamente:", data.message)
-        setToken(data.newToken)
-        localStorage.setItem("token", data.newToken)
-        
-        // Mostrar mensaje de éxito
-        setError("") // Limpiar errores
-        alert(`✅ ${data.message}`)
-        
-        resetForm()
-        // Recargar usuarios con el nuevo token
-        await fetchUsuarios(data.newToken)
-      } else {
-        // Actualización normal de otro usuario
-        resetForm()
-        await fetchUsuarios()
-      }
+ if (data.newToken) {
+  // El usuario editó su propio perfil, actualizar token
+  console.log("✅ Token renovado automáticamente:", data.message)
+  setToken(data.newToken)
+  localStorage.setItem("token", data.newToken)
+
+  // 🔑 Decodificar nuevo token para actualizar nombreCompleto en localStorage
+  const decoded = decodeToken(data.newToken)
+  if (decoded?.nombreCompleto) {
+    localStorage.setItem("nombreCompleto", decoded.nombreCompleto)
+  }
+
+  // Mostrar mensaje de éxito
+  setError("") // Limpiar errores
+  alert(`✅ ${data.message}`)
+
+  resetForm()
+  await fetchUsuarios(data.newToken)
+}
+
       
     } catch (err: any) {
       setError("Error de conexión")
