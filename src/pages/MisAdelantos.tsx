@@ -22,6 +22,7 @@ export default function MisAdelantos() {
   const [editId, setEditId] = useState<number | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState("")
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
 
   const token = localStorage.getItem("token") || ""
   const idUsuario = localStorage.getItem("idUsuario")
@@ -34,9 +35,7 @@ export default function MisAdelantos() {
 
     try {
       const res = await fetch(`https://api-transporte-98xe.onrender.com/api/adelantos/choferes/${idUsuario}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error("No se pudieron obtener tus adelantos")
       const data = await res.json()
@@ -71,13 +70,21 @@ export default function MisAdelantos() {
     setOperarioId("")
     setShowModal(false)
     setError("")
+    setFieldErrors({})
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+    setFieldErrors({})
 
     if (!idUsuario || !operarioId || !cantidad) {
-      setError("Todos los campos son obligatorios")
+      setError("Los campos(Operario, Cantidad) son obligatorios")
+      return
+    }
+
+    if (isNaN(parseFloat(cantidad)) || parseFloat(cantidad) <= 0) {
+      setError("La cantidad debe ser un número válido mayor que 0")
       return
     }
 
@@ -103,7 +110,21 @@ export default function MisAdelantos() {
         },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error("Error al guardar adelanto")
+
+      if (!res.ok) {
+        const errorData = await res.json()
+
+        if (res.status === 400 && typeof errorData === "object") {
+          setFieldErrors(errorData)
+          const general = Object.values(errorData).join(".\n") + "."
+          setError(general)
+        } else {
+          setError(errorData.error || "Error al guardar adelanto")
+        }
+
+        return
+      }
+
       fetchAdelantos()
       resetForm()
     } catch (err: any) {
@@ -125,9 +146,7 @@ export default function MisAdelantos() {
     try {
       const res = await fetch(`https://api-transporte-98xe.onrender.com/api/adelantos/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error("No se pudo eliminar")
       fetchAdelantos()
@@ -145,7 +164,7 @@ export default function MisAdelantos() {
         </button>
       </div>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <p className="text-red-500 mb-4 whitespace-pre-line">{error}</p>}
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white shadow rounded">
@@ -185,47 +204,82 @@ export default function MisAdelantos() {
           </tbody>
         </table>
       </div>
+{showModal && (
+  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
+      <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Nuevo Adelanto"}</h2>
+      
+      <form onSubmit={handleSubmit} className="grid gap-4">
+        {/* ✅ Mostrar error general solo si no hay errores específicos */}
+        {error &&
+          !fieldErrors.operarioId &&
+          !fieldErrors.cantidad &&
+          !fieldErrors.mensaje && (
+            <p className="text-red-500 whitespace-pre-line">{error}</p>
+          )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Nuevo Adelanto"}</h2>
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <select value={operarioId} onChange={(e) => setOperarioId(e.target.value)} className="border p-2 rounded">
-                <option value="">Seleccione un Operario</option>
-                {operarios.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.nombre}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                placeholder="Cantidad"
-                value={cantidad}
-                onChange={(e) => setCantidad(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Mensaje"
-                value={mensaje}
-                onChange={(e) => setMensaje(e.target.value)}
-                className="border p-2 rounded"
-              />
-
-              <div className="flex justify-end gap-2">
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-                  {editId ? "Actualizar" : "Crear"}
-                </button>
-                <button type="button" onClick={resetForm} className="bg-gray-500 text-white px-4 py-2 rounded">
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
+        <div>
+          <select
+            value={operarioId}
+            onChange={(e) => setOperarioId(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.operarioId ? "border-red-500" : ""}`}
+          >
+            <option value="">Seleccione un Operario</option>
+            {operarios.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.nombre}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.operarioId && (
+            <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>
+          )}
         </div>
-      )}
+
+        <div>
+          <input
+            type="number"
+            placeholder="Cantidad"
+            value={cantidad}
+            onChange={(e) => setCantidad(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.cantidad ? "border-red-500" : ""}`}
+          />
+          {fieldErrors.cantidad && (
+            <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>
+          )}
+        </div>
+
+        <div>
+          <input
+            type="text"
+            placeholder="Mensaje"
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.mensaje ? "border-red-500" : ""}`}
+          />
+          {fieldErrors.mensaje && (
+            <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+            {editId ? "Actualizar" : "Crear"}
+          </button>
+          <button
+            type="button"
+            onClick={resetForm}
+            className="bg-gray-500 text-white px-4 py-2 rounded"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
     </div>
   )
 }

@@ -87,7 +87,7 @@ export default function Adelantos() {
     setFieldErrors({})
 
     if (!usuarioId || !operarioId || !cantidad) {
-      setError("Todos los campos son obligatorios")
+      setError("Los campos(Usuario, Operario, Cantidad) son obligatorios")
       return
     }
 
@@ -215,74 +215,92 @@ export default function Adelantos() {
         </table>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Crear Adelanto"}</h2>
+{showModal && (
+  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
+      <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Crear Adelanto"}</h2>
 
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <div>
-                <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)} className="border p-2 rounded w-full">
-                  <option value="">Seleccione un Usuario</option>
-                  {usuarios.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.nombre}
-                    </option>
-                  ))}
-                </select>
-                {fieldErrors.usuarioId && <p className="text-red-500 text-sm">{fieldErrors.usuarioId}</p>}
-              </div>
+      <form onSubmit={handleSubmit} className="grid gap-4">
+        {/* ✅ Mostrar mensaje general SOLO si no hay errores de campo */}
+        {error &&
+          !fieldErrors.usuarioId &&
+          !fieldErrors.operarioId &&
+          !fieldErrors.cantidad &&
+          !fieldErrors.mensaje && (
+            <p className="text-red-500 whitespace-pre-line">{error}</p>
+          )}
 
-              <div>
-                <select value={operarioId} onChange={(e) => setOperarioId(e.target.value)} className="border p-2 rounded w-full">
-                  <option value="">Seleccione un Operario</option>
-                  {operarios.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.nombre}
-                    </option>
-                  ))}
-                </select>
-                {fieldErrors.operarioId && <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>}
-              </div>
-
-              <div>
-                <input
-                  type="number"
-                  placeholder="Cantidad"
-                  value={cantidad}
-                  onChange={(e) => setCantidad(e.target.value)}
-                  className="border p-2 rounded w-full"
-                />
-                {fieldErrors.cantidad && <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>}
-              </div>
-
-              <div>
-                <input
-                  type="text"
-                  placeholder="Mensaje"
-                  value={mensaje}
-                  onChange={(e) => setMensaje(e.target.value)}
-                  className="border p-2 rounded w-full"
-                />
-                {fieldErrors.mensaje && <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>}
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-                  {editId ? "Actualizar" : "Crear"}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
+        <div>
+          <select
+            value={usuarioId}
+            onChange={(e) => setUsuarioId(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.usuarioId ? "border-red-500" : ""}`}
+          >
+            <option value="">Seleccione un Usuario</option>
+            {usuarios.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.nombre}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.usuarioId && <p className="text-red-500 text-sm">{fieldErrors.usuarioId}</p>}
         </div>
-      )}
+
+        <div>
+          <select
+            value={operarioId}
+            onChange={(e) => setOperarioId(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.operarioId ? "border-red-500" : ""}`}
+          >
+            <option value="">Seleccione un Operario</option>
+            {operarios.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.nombre}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.operarioId && <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>}
+        </div>
+
+        <div>
+          <input
+            type="number"
+            placeholder="Cantidad"
+            value={cantidad}
+            onChange={(e) => setCantidad(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.cantidad ? "border-red-500" : ""}`}
+          />
+          {fieldErrors.cantidad && <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>}
+        </div>
+
+        <div>
+          <input
+            type="text"
+            placeholder="Mensaje"
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            className={`border p-2 rounded w-full ${fieldErrors.mensaje ? "border-red-500" : ""}`}
+          />
+          {fieldErrors.mensaje && <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>}
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+            {editId ? "Actualizar" : "Crear"}
+          </button>
+          <button
+            type="button"
+            onClick={resetForm}
+            className="bg-gray-500 text-white px-4 py-2 rounded"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   )
 }
