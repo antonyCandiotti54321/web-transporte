@@ -98,90 +98,92 @@ export default function Usuarios() {
     setError("")
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    
-    if (!nombreCompleto || !username || !rol) {
-      setError("Todos los campos son obligatorios")
-      return
-    }
-
-    const isEditing = !!editId
-
-    if (!isEditing && (!password || !repeatPassword)) {
-      setError("Debes ingresar y repetir la contraseña al crear")
-      return
-    }
-
-    if ((password || repeatPassword) && password !== repeatPassword) {
-      setError("Las contraseñas no coinciden")
-      return
-    }
-
-    const method = isEditing ? "PATCH" : "POST"
-    const url = isEditing
-      ? `https://api-transporte-98xe.onrender.com/api/usuarios/${editId}`
-      : "https://api-transporte-98xe.onrender.com/api/auth/register"
-
-    const payload: any = {
-      nombreCompleto,
-      username,
-      rol,
-    }
-
-    if (password) payload.password = password
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      })
-      
-      if (!res.ok) {
-        const errorData = await res.json()
-        
-        if (res.status === 400 && typeof errorData === 'object' && !errorData.error) {
-          const errorMessages = Object.values(errorData).join('.\n') + '.'
-          setError(errorMessages)
-        } else {
-          setError(errorData.error || "Error al guardar usuario")
-        }
-        return
-      }
-      
-      const data = await res.json()
-      
-      // *** NUEVA LÓGICA: Verificar si se devolvió un nuevo token ***
- if (data.newToken) {
-  // El usuario editó su propio perfil, actualizar token
-  console.log("✅ Token renovado automáticamente:", data.message)
-  setToken(data.newToken)
-  localStorage.setItem("token", data.newToken)
-
-  // 🔑 Decodificar nuevo token para actualizar nombreCompleto en localStorage
-  const decoded = decodeToken(data.newToken)
-  if (decoded?.nombreCompleto) {
-    localStorage.setItem("nombreCompleto", decoded.nombreCompleto)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setError("")
+  
+  if (!nombreCompleto || !username || !rol) {
+    setError("Todos los campos son obligatorios")
+    return
   }
 
-  // Mostrar mensaje de éxito
-  setError("") // Limpiar errores
-  alert(`✅ ${data.message}`)
+  const isEditing = !!editId
 
-  resetForm()
-  await fetchUsuarios(data.newToken)
+  if (!isEditing && (!password || !repeatPassword)) {
+    setError("Debes ingresar y repetir la contraseña al crear")
+    return
+  }
+
+  if ((password || repeatPassword) && password !== repeatPassword) {
+    setError("Las contraseñas no coinciden")
+    return
+  }
+
+  const method = isEditing ? "PATCH" : "POST"
+  const url = isEditing
+    ? `https://api-transporte-98xe.onrender.com/api/usuarios/${editId}`
+    : "https://api-transporte-98xe.onrender.com/api/auth/register"
+
+  const payload: any = {
+    nombreCompleto,
+    username,
+    rol,
+  }
+
+  if (password) payload.password = password
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json()
+      
+      if (res.status === 400 && typeof errorData === 'object' && !errorData.error) {
+        const errorMessages = Object.values(errorData).join('.\n') + '.'
+        setError(errorMessages)
+      } else {
+        setError(errorData.error || "Error al guardar usuario")
+      }
+      return
+    }
+
+    const data = await res.json().catch(() => ({}))
+
+    if (data.newToken) {
+      // Usuario editó su propio perfil
+      console.log("✅ Token renovado automáticamente:", data.message)
+      setToken(data.newToken)
+      localStorage.setItem("token", data.newToken)
+
+      const decoded = decodeToken(data.newToken)
+      if (decoded?.nombreCompleto) {
+        localStorage.setItem("nombreCompleto", decoded.nombreCompleto)
+      }
+
+      alert(`✅ ${data.message}`)
+      setError("")
+      resetForm()
+      await fetchUsuarios(data.newToken)
+    } else {
+      // Otro usuario fue editado
+      alert(`✅ Usuario actualizado correctamente`)
+      setError("")
+      resetForm()
+      await fetchUsuarios()
+    }
+
+  } catch (err: any) {
+    setError("Error de conexión")
+  }
 }
 
-      
-    } catch (err: any) {
-      setError("Error de conexión")
-    }
-  }
 
   const handleEdit = (u: Usuario) => {
     setEditId(u.id)

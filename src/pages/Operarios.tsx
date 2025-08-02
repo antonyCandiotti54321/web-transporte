@@ -87,6 +87,10 @@ export default function Operarios() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("¿Estás seguro de eliminar este operario?")) return
+    
+    // Limpiar errores previos
+    setError("")
+    
     try {
       const res = await fetch(`https://api-transporte-98xe.onrender.com/api/operarios/${id}`, {
         method: "DELETE",
@@ -94,7 +98,23 @@ export default function Operarios() {
           Authorization: `Bearer ${token}`,
         },
       })
-      if (!res.ok) throw new Error("Error al eliminar operario")
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        
+        // Manejar específicamente el error 403 (último administrador)
+        if (res.status === 403) {
+          setError(errorData.error || "No tienes permisos para realizar esta acción")
+        } else if (res.status === 400 && typeof errorData === "object") {
+          // Manejar errores de validación
+          const errorMessages = Object.values(errorData).join(".\n") + "."
+          setError(errorMessages)
+        } else {
+          setError(errorData.error || "Error al eliminar operario")
+        }
+        return
+      }
+      
       fetchOperarios()
     } catch (err: any) {
       setError(err.message || "Error desconocido al eliminar")
