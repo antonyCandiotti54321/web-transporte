@@ -228,11 +228,7 @@ export default function Usuarios() {
       </div>
 
       {/* Mostrar información del usuario actual */}
-      {currentUser && (
-        <div className="bg-blue-50 p-3 rounded mb-4 text-sm">
-          <strong>Usuario actual:</strong> {currentUser.sub} ({currentUser.role}) - ID: {currentUser.userId}
-        </div>
-      )}
+      
 
       {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
 
