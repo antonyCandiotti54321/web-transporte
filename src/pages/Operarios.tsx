@@ -145,7 +145,7 @@ export default function Operarios() {
         <thead className="bg-gray-200 text-gray-700">
           <tr>
             <th className="py-2 px-4 text-left">ID</th>
-            <th className="py-2 px-4 text-left">Nombre Completo</th>
+            <th className="py-2 px-4 text-left w-[300px]">Nombre Completo</th>
             <th className="py-2 px-4 text-left">Acciones</th>
           </tr>
         </thead>

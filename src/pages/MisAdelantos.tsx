@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 
+// Tipado extendido para incluir fechaActualizacion
 type Adelanto = {
   id: number
   operarioNombre: string
   cantidad: number
   mensaje: string
   fechaHora: string
+  fechaActualizacion: string | null
 }
 
 type Operario = {
@@ -23,6 +25,7 @@ export default function MisAdelantos() {
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState("")
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+  const [selectedAdelanto, setSelectedAdelanto] = useState<Adelanto | null>(null)
 
   const token = localStorage.getItem("token") || ""
   const idUsuario = localStorage.getItem("idUsuario")
@@ -69,6 +72,7 @@ export default function MisAdelantos() {
     setMensaje("")
     setOperarioId("")
     setShowModal(false)
+    setSelectedAdelanto(null)
     setError("")
     setFieldErrors({})
   }
@@ -179,107 +183,152 @@ export default function MisAdelantos() {
             </tr>
           </thead>
           <tbody>
-            {adelantos.map((a) => (
-              <tr key={a.id} className="border-t hover:bg-gray-50">
-                <td className="py-2 px-4">{a.id}</td>
-                <td className="py-2 px-4">{a.operarioNombre}</td>
-                <td className="py-2 px-4">S/ {a.cantidad.toFixed(2)}</td>
-                <td className="py-2 px-4">{a.mensaje}</td>
-                <td className="py-2 px-4">
-                  {new Date(a.fechaHora).toLocaleString("es-PE", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
-                </td>
-                <td className="py-2 px-4 flex gap-2">
-                  <button onClick={() => handleEdit(a)} className="bg-yellow-400 text-white px-3 py-1 rounded">
-                    Editar
-                  </button>
-                  <button onClick={() => handleDelete(a.id)} className="bg-red-500 text-white px-3 py-1 rounded">
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
+{adelantos.map((a) => (
+  <tr key={a.id} className="border-t hover:bg-gray-50">
+    <td className="py-2 px-4">{a.id}</td>
+
+    <td className="py-2 px-4 max-w-[180px] truncate" title={a.operarioNombre}>
+      {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
+    </td>
+
+    <td className="py-2 px-4 w-[120px] text-nowrap">
+      S/ {a.cantidad.toFixed(2)}
+    </td>
+
+    <td className="py-2 px-4 max-w-[180px] truncate" title={a.mensaje}>
+      {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
+    </td>
+
+    <td className="py-2 px-4">
+      {new Date(a.fechaHora).toLocaleString("es-PE", {
+        dateStyle: "short",
+        timeStyle: "short",
+      })}
+    </td>
+
+    <td className="py-2 px-4 w-[240px]">
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleEdit(a)}
+          className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
+        >
+          Editar
+        </button>
+
+        <button
+          onClick={() => handleDelete(a.id)}
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+        >
+          Eliminar
+        </button>
+
+        <button
+          onClick={() => setSelectedAdelanto(a)}
+          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+        >
+          Ver
+        </button>
+      </div>
+    </td>
+  </tr>
+))}
+
+
+
           </tbody>
         </table>
       </div>
-{showModal && (
-  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Nuevo Adelanto"}</h2>
-      
-      <form onSubmit={handleSubmit} className="grid gap-4">
-        {/* ✅ Mostrar error general solo si no hay errores específicos */}
-        {error &&
-          !fieldErrors.operarioId &&
-          !fieldErrors.cantidad &&
-          !fieldErrors.mensaje && (
-            <p className="text-red-500 whitespace-pre-line">{error}</p>
-          )}
 
-        <div>
-          <select
-            value={operarioId}
-            onChange={(e) => setOperarioId(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.operarioId ? "border-red-500" : ""}`}
-          >
-            <option value="">Seleccione un Operario</option>
-            {operarios.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.nombre}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.operarioId && (
-            <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>
-          )}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Nuevo Adelanto"}</h2>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              {error &&
+                !fieldErrors.operarioId &&
+                !fieldErrors.cantidad &&
+                !fieldErrors.mensaje && (
+                  <p className="text-red-500 whitespace-pre-line">{error}</p>
+                )}
+              <div>
+                <select
+                  value={operarioId}
+                  onChange={(e) => setOperarioId(e.target.value)}
+                  className={`border p-2 rounded w-full ${fieldErrors.operarioId ? "border-red-500" : ""}`}
+                >
+                  <option value="">Seleccione un Operario</option>
+                  {operarios.map((o) => (
+                    <option key={o.id} value={o.id}>{o.nombre}</option>
+                  ))}
+                </select>
+                {fieldErrors.operarioId && <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>}
+              </div>
+              <div>
+                <input
+                  type="number"
+                  placeholder="Cantidad"
+                  value={cantidad}
+                  onChange={(e) => setCantidad(e.target.value)}
+                  className={`border p-2 rounded w-full ${fieldErrors.cantidad ? "border-red-500" : ""}`}
+                />
+                {fieldErrors.cantidad && <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Mensaje"
+                  value={mensaje}
+                  onChange={(e) => setMensaje(e.target.value)}
+                  className={`border p-2 rounded w-full ${fieldErrors.mensaje ? "border-red-500" : ""}`}
+                />
+                {fieldErrors.mensaje && <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>}
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+                  {editId ? "Actualizar" : "Crear"}
+                </button>
+                <button type="button" onClick={resetForm} className="bg-gray-500 text-white px-4 py-2 rounded">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      )}
 
-        <div>
-          <input
-            type="number"
-            placeholder="Cantidad"
-            value={cantidad}
-            onChange={(e) => setCantidad(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.cantidad ? "border-red-500" : ""}`}
-          />
-          {fieldErrors.cantidad && (
-            <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>
-          )}
+      {selectedAdelanto && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-2xl shadow-lg overflow-y-auto max-h-[90vh]">
+            <h2 className="text-xl font-bold mb-4">Detalle del Adelanto</h2>
+            <div className="grid grid-cols-1 gap-3 text-sm select-text break-words">
+              <div><span className="font-semibold">ID:</span> {selectedAdelanto.id}</div>
+              <div><span className="font-semibold">Operario:</span> {selectedAdelanto.operarioNombre}</div>
+              <div><span className="font-semibold">Cantidad:</span> S/ {selectedAdelanto.cantidad.toFixed(2)}</div>
+              <div><span className="font-semibold">Mensaje:</span> {selectedAdelanto.mensaje}</div>
+              <div><span className="font-semibold">Fecha de creación:</span> {
+                new Date(selectedAdelanto.fechaHora).toLocaleString("es-PE", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}</div>
+              <div><span className="font-semibold">Fecha de actualización:</span> {
+                selectedAdelanto.fechaActualizacion
+                  ? new Date(selectedAdelanto.fechaActualizacion).toLocaleString("es-PE", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })
+                  : "Nunca modificado"}</div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={resetForm}
+                className="bg-gray-600 text-white px-4 py-2 rounded"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div>
-          <input
-            type="text"
-            placeholder="Mensaje"
-            value={mensaje}
-            onChange={(e) => setMensaje(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.mensaje ? "border-red-500" : ""}`}
-          />
-          {fieldErrors.mensaje && (
-            <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-            {editId ? "Actualizar" : "Crear"}
-          </button>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
-
-
+      )}
     </div>
   )
 }

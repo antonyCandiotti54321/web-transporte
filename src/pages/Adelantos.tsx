@@ -192,38 +192,56 @@ export default function Adelantos() {
             </tr>
           </thead>
          <tbody>
-  {adelantos.map((a) => (
-    <tr key={a.id} className="border-t hover:bg-gray-50">
-      <td className="py-2 px-4">{a.id}</td>
-      <td className="py-2 px-4 max-w-[180px] truncate" title={a.usuarioNombre}>
-        {a.usuarioNombre.length > 17 ? a.usuarioNombre.slice(0, 17) + "…" : a.usuarioNombre}
-      </td>
-      <td className="py-2 px-4 max-w-[180px] truncate" title={a.operarioNombre}>
-        {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
-      </td>
-      <td className="py-2 px-4">S/ {a.cantidad.toFixed(2)}</td>
-      <td className="py-2 px-4 max-w-[180px] truncate" title={a.mensaje}>
-        {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
-      </td>
-      <td className="py-2 px-4">
-        {new Date(a.fechaHora).toLocaleString("es-PE", {
-          dateStyle: "short",
-          timeStyle: "short",
-        })}
-      </td>
-      <td className="py-2 px-4 flex gap-2">
-        <button onClick={() => handleEdit(a)} className="bg-yellow-400 text-white px-3 py-1 rounded">
-          Editar
-        </button>
-        <button onClick={() => handleDelete(a.id)} className="bg-red-500 text-white px-3 py-1 rounded">
-          Eliminar
-        </button>
-        <button onClick={() => setSelectedAdelanto(a)} className="bg-green-600 text-white px-3 py-1 rounded">
-          Ver
-        </button>
-      </td>
-    </tr>
-  ))}
+{adelantos.map((a) => (
+  <tr key={a.id} className="border-t hover:bg-gray-50">
+    <td className="py-2 px-4">{a.id}</td>
+
+    <td className="py-2 px-4 max-w-[180px] truncate" title={a.usuarioNombre}>
+      {a.usuarioNombre.length > 17 ? a.usuarioNombre.slice(0, 17) + "…" : a.usuarioNombre}
+    </td>
+
+    <td className="py-2 px-4 max-w-[180px] truncate" title={a.operarioNombre}>
+      {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
+    </td>
+
+    <td className="py-2 px-4 w-[120px] text-nowrap">
+      S/ {a.cantidad.toFixed(2)}
+    </td>
+
+    <td className="py-2 px-4 max-w-[180px] truncate" title={a.mensaje}>
+      {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
+    </td>
+
+    <td className="py-2 px-4">
+      {new Date(a.fechaHora).toLocaleString("es-PE", {
+        dateStyle: "short",
+        timeStyle: "short",
+      })}
+    </td>
+
+    <td className="py-2 px-4 w-[240px] flex gap-2">
+      <button
+        onClick={() => handleEdit(a)}
+        className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
+      >
+        Editar
+      </button>
+      <button
+        onClick={() => handleDelete(a.id)}
+        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+      >
+        Eliminar
+      </button>
+      <button
+        onClick={() => setSelectedAdelanto(a)}
+        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+      >
+        Ver
+      </button>
+    </td>
+  </tr>
+))}
+
 </tbody>
 
         </table>
