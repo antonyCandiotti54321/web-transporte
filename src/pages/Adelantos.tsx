@@ -191,39 +191,41 @@ export default function Adelantos() {
               <th className="py-2 px-4">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {adelantos.map((a) => (
-              <tr key={a.id} className="border-t hover:bg-gray-50">
-                <td className="py-2 px-4">{a.id}</td>
-                <td className="py-2 px-4">{a.usuarioNombre}</td>
-                <td className="py-2 px-4">{a.operarioNombre}</td>
-                <td className="py-2 px-4">S/ {a.cantidad.toFixed(2)}</td>
-                <td className="py-2 px-4">{a.mensaje}</td>
-                <td className="py-2 px-4">
-                  {new Date(a.fechaHora).toLocaleString("es-PE", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
-                </td>
-<td className="py-2 px-4 flex gap-2">
-  <button onClick={() => handleEdit(a)} className="bg-yellow-400 text-white px-3 py-1 rounded">
-    Editar
-  </button>
-  <button onClick={() => handleDelete(a.id)} className="bg-red-500 text-white px-3 py-1 rounded">
-    Eliminar
-  </button>
-<button
-  onClick={() => setSelectedAdelanto(a)}
-  className="bg-green-600 text-white px-3 py-1 rounded"
->
-  Ver
-</button>
+         <tbody>
+  {adelantos.map((a) => (
+    <tr key={a.id} className="border-t hover:bg-gray-50">
+      <td className="py-2 px-4">{a.id}</td>
+      <td className="py-2 px-4 max-w-[180px] truncate" title={a.usuarioNombre}>
+        {a.usuarioNombre.length > 17 ? a.usuarioNombre.slice(0, 17) + "…" : a.usuarioNombre}
+      </td>
+      <td className="py-2 px-4 max-w-[180px] truncate" title={a.operarioNombre}>
+        {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
+      </td>
+      <td className="py-2 px-4">S/ {a.cantidad.toFixed(2)}</td>
+      <td className="py-2 px-4 max-w-[180px] truncate" title={a.mensaje}>
+        {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
+      </td>
+      <td className="py-2 px-4">
+        {new Date(a.fechaHora).toLocaleString("es-PE", {
+          dateStyle: "short",
+          timeStyle: "short",
+        })}
+      </td>
+      <td className="py-2 px-4 flex gap-2">
+        <button onClick={() => handleEdit(a)} className="bg-yellow-400 text-white px-3 py-1 rounded">
+          Editar
+        </button>
+        <button onClick={() => handleDelete(a.id)} className="bg-red-500 text-white px-3 py-1 rounded">
+          Eliminar
+        </button>
+        <button onClick={() => setSelectedAdelanto(a)} className="bg-green-600 text-white px-3 py-1 rounded">
+          Ver
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
 
-</td>
-
-              </tr>
-            ))}
-          </tbody>
         </table>
       </div>
 
@@ -312,33 +314,54 @@ export default function Adelantos() {
     </div>
   </div>
 )}{selectedAdelanto && (
-  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+    <div className="bg-white p-6 rounded-lg w-full max-w-2xl shadow-lg overflow-y-auto max-h-[90vh]">
       <h2 className="text-xl font-bold mb-4">Detalle del Adelanto</h2>
-      <div className="space-y-2 text-sm select-text">
-        <p><span className="font-semibold">ID:</span> {selectedAdelanto.id}</p>
-        <p><span className="font-semibold">Usuario:</span> {selectedAdelanto.usuarioNombre}</p>
-        <p><span className="font-semibold">Operario:</span> {selectedAdelanto.operarioNombre}</p>
-        <p><span className="font-semibold">Cantidad:</span> S/ {selectedAdelanto.cantidad.toFixed(2)}</p>
-        <p><span className="font-semibold">Mensaje:</span> {selectedAdelanto.mensaje}</p>
-        <p>
+      
+      <div className="grid grid-cols-1 gap-3 text-sm select-text break-words">
+        <div>
+          <span className="font-semibold">ID:</span>{" "}
+          <span>{selectedAdelanto.id}</span>
+        </div>
+        <div>
+          <span className="font-semibold">Usuario:</span>{" "}
+          <span>{selectedAdelanto.usuarioNombre}</span>
+        </div>
+        <div>
+          <span className="font-semibold">Operario:</span>{" "}
+          <span>{selectedAdelanto.operarioNombre}</span>
+        </div>
+        <div>
+          <span className="font-semibold">Cantidad:</span>{" "}
+          <span>S/ {selectedAdelanto.cantidad.toFixed(2)}</span>
+        </div>
+        <div>
+          <span className="font-semibold">Mensaje:</span>{" "}
+          <span className="whitespace-pre-wrap break-words">{selectedAdelanto.mensaje}</span>
+        </div>
+        <div>
           <span className="font-semibold">Fecha de creación:</span>{" "}
-          {new Date(selectedAdelanto.fechaHora).toLocaleString("es-PE", {
-            dateStyle: "short",
-            timeStyle: "short",
-          })}
-        </p>
-        <p>
+          <span>
+            {new Date(selectedAdelanto.fechaHora).toLocaleString("es-PE", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
+          </span>
+        </div>
+        <div>
           <span className="font-semibold">Fecha de actualización:</span>{" "}
-          {selectedAdelanto.fechaActualizacion
-            ? new Date(selectedAdelanto.fechaActualizacion).toLocaleString("es-PE", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })
-            : "Nunca modificado"}
-        </p>
+          <span>
+            {selectedAdelanto.fechaActualizacion
+              ? new Date(selectedAdelanto.fechaActualizacion).toLocaleString("es-PE", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })
+              : "Nunca modificado"}
+          </span>
+        </div>
       </div>
-      <div className="flex justify-end mt-4">
+
+      <div className="flex justify-end mt-6">
         <button
           onClick={() => setSelectedAdelanto(null)}
           className="bg-gray-600 text-white px-4 py-2 rounded"
@@ -349,6 +372,7 @@ export default function Adelantos() {
     </div>
   </div>
 )}
+
 
 
 
