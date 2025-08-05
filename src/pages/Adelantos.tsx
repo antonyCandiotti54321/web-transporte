@@ -7,7 +7,9 @@ type Adelanto = {
   cantidad: number
   mensaje: string
   fechaHora: string
+  fechaActualizacion: string | null
 }
+
 
 type Usuario = { id: number; nombre: string }
 type Operario = { id: number; nombre: string }
@@ -26,6 +28,8 @@ export default function Adelantos() {
 
   const [error, setError] = useState("")
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+  const [selectedAdelanto, setSelectedAdelanto] = useState<Adelanto | null>(null)
+
 
   const token = localStorage.getItem("token") || ""
 
@@ -201,14 +205,22 @@ export default function Adelantos() {
                     timeStyle: "short",
                   })}
                 </td>
-                <td className="py-2 px-4 flex gap-2">
-                  <button onClick={() => handleEdit(a)} className="bg-yellow-400 text-white px-3 py-1 rounded">
-                    Editar
-                  </button>
-                  <button onClick={() => handleDelete(a.id)} className="bg-red-500 text-white px-3 py-1 rounded">
-                    Eliminar
-                  </button>
-                </td>
+<td className="py-2 px-4 flex gap-2">
+  <button onClick={() => handleEdit(a)} className="bg-yellow-400 text-white px-3 py-1 rounded">
+    Editar
+  </button>
+  <button onClick={() => handleDelete(a.id)} className="bg-red-500 text-white px-3 py-1 rounded">
+    Eliminar
+  </button>
+<button
+  onClick={() => setSelectedAdelanto(a)}
+  className="bg-green-600 text-white px-3 py-1 rounded"
+>
+  Ver
+</button>
+
+</td>
+
               </tr>
             ))}
           </tbody>
@@ -299,7 +311,46 @@ export default function Adelantos() {
       </form>
     </div>
   </div>
+)}{selectedAdelanto && (
+  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+      <h2 className="text-xl font-bold mb-4">Detalle del Adelanto</h2>
+      <div className="space-y-2 text-sm select-text">
+        <p><span className="font-semibold">ID:</span> {selectedAdelanto.id}</p>
+        <p><span className="font-semibold">Usuario:</span> {selectedAdelanto.usuarioNombre}</p>
+        <p><span className="font-semibold">Operario:</span> {selectedAdelanto.operarioNombre}</p>
+        <p><span className="font-semibold">Cantidad:</span> S/ {selectedAdelanto.cantidad.toFixed(2)}</p>
+        <p><span className="font-semibold">Mensaje:</span> {selectedAdelanto.mensaje}</p>
+        <p>
+          <span className="font-semibold">Fecha de creación:</span>{" "}
+          {new Date(selectedAdelanto.fechaHora).toLocaleString("es-PE", {
+            dateStyle: "short",
+            timeStyle: "short",
+          })}
+        </p>
+        <p>
+          <span className="font-semibold">Fecha de actualización:</span>{" "}
+          {selectedAdelanto.fechaActualizacion
+            ? new Date(selectedAdelanto.fechaActualizacion).toLocaleString("es-PE", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })
+            : "Nunca modificado"}
+        </p>
+      </div>
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={() => setSelectedAdelanto(null)}
+          className="bg-gray-600 text-white px-4 py-2 rounded"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
 )}
+
+
 
     </div>
   )
