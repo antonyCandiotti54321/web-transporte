@@ -11,17 +11,21 @@ export default function Operarios() {
   const [editId, setEditId] = useState<number | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState("")
+  const [sortBy, setSortBy] = useState("id")
 
   const token = localStorage.getItem("token") || ""
 
   const fetchOperarios = async () => {
     try {
-      const res = await fetch("https://api-transporte-98xe.onrender.com/api/operarios", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch(
+        `https://api-transporte-98xe.onrender.com/api/operarios?page=0&size=10&sort=${sortBy},asc`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       if (!res.ok) throw new Error("No se pudo obtener la lista de operarios")
       const data = await res.json()
-      setOperarios(data)
+      setOperarios(data.content)
     } catch (err: any) {
       setError(err.message || "Error desconocido al cargar operarios")
     }
@@ -29,7 +33,7 @@ export default function Operarios() {
 
   useEffect(() => {
     fetchOperarios()
-  }, [])
+  }, [sortBy]) // se vuelve a ejecutar cuando cambia el criterio de ordenamiento
 
   const resetForm = () => {
     setEditId(null)
@@ -66,15 +70,12 @@ export default function Operarios() {
 
       if (!res.ok) {
         const errorData = await res.json()
-
         if (res.status === 400 && typeof errorData === "object") {
-          // Concatenar errores en líneas separadas
           const errorMessages = Object.values(errorData).join(".\n") + "."
           setError(errorMessages)
         } else {
           setError(errorData.error || "Error al guardar operario")
         }
-
         return
       }
 
@@ -87,10 +88,9 @@ export default function Operarios() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("¿Estás seguro de eliminar este operario?")) return
-    
-    // Limpiar errores previos
+
     setError("")
-    
+
     try {
       const res = await fetch(`https://api-transporte-98xe.onrender.com/api/operarios/${id}`, {
         method: "DELETE",
@@ -98,15 +98,12 @@ export default function Operarios() {
           Authorization: `Bearer ${token}`,
         },
       })
-      
+
       if (!res.ok) {
         const errorData = await res.json()
-        
-        // Manejar específicamente el error 403 (último administrador)
         if (res.status === 403) {
           setError(errorData.error || "No tienes permisos para realizar esta acción")
         } else if (res.status === 400 && typeof errorData === "object") {
-          // Manejar errores de validación
           const errorMessages = Object.values(errorData).join(".\n") + "."
           setError(errorMessages)
         } else {
@@ -114,7 +111,7 @@ export default function Operarios() {
         }
         return
       }
-      
+
       fetchOperarios()
     } catch (err: any) {
       setError(err.message || "Error desconocido al eliminar")
@@ -137,6 +134,18 @@ export default function Operarios() {
         >
           Crear Operario
         </button>
+      </div>
+
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Ordenar por:</label>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="border rounded px-3 py-2"
+        >
+          <option value="id">ID</option>
+          <option value="nombreCompleto">Nombre Completo</option>
+        </select>
       </div>
 
       {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
