@@ -159,85 +159,76 @@ export default function MisAdelantos() {
     }
   }
 
-  return (
-    <div className="max-w-4xl mx-auto px-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Mis Adelantos</h1>
-        <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded">
-          Nuevo Adelanto
-        </button>
-      </div>
+return (
+  <div className="max-w-4xl mx-auto px-4 text-sm">
+    <div className="flex justify-between items-center mb-4">
+      <h1 className="text-lg font-semibold">Mis Adelantos</h1>
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+      >
+        Nuevo Adelanto
+      </button>
+    </div>
 
-      {error && <p className="text-red-500 mb-4 whitespace-pre-line">{error}</p>}
+    {error && <p className="text-red-500 mb-4 whitespace-pre-line">{error}</p>}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white shadow rounded">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="py-2 px-4">ID</th>
-              <th className="py-2 px-4">Operario</th>
-              <th className="py-2 px-4">Cantidad</th>
-              <th className="py-2 px-4">Mensaje</th>
-              <th className="py-2 px-4">Fecha</th>
-              <th className="py-2 px-4">Acciones</th>
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white shadow rounded text-sm">
+        <thead className="bg-gray-200 text-gray-700">
+          <tr>
+            <th className="py-1.5 px-2">ID</th>
+            <th className="py-1.5 px-2">Operario</th>
+            <th className="py-1.5 px-2">Cantidad</th>
+            <th className="py-1.5 px-2">Mensaje</th>
+            <th className="py-1.5 px-2">Fecha/Hora</th>
+            <th className="py-1.5 px-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {adelantos.map((a) => (
+            <tr key={a.id} className="border-t hover:bg-gray-50">
+              <td className="py-1.5 px-2">{a.id}</td>
+              <td className="py-1.5 px-2 max-w-[180px] truncate" title={a.operarioNombre}>
+                {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
+              </td>
+              <td className="py-1.5 px-2 w-[120px] text-nowrap">
+                S/ {a.cantidad.toFixed(2)}
+              </td>
+              <td className="py-1.5 px-2 max-w-[180px] truncate" title={a.mensaje}>
+                {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
+              </td>
+              <td className="py-1.5 px-2 max-w-[100px] truncate" title={new Date(a.fechaHora).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" })}>
+                {new Date(a.fechaHora).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+              </td>
+              <td className="py-1.5 px-2 w-[240px]">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(a)}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-white px-2.5 py-1 text-xs rounded"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(a.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 text-xs rounded"
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    onClick={() => setSelectedAdelanto(a)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-2.5 py-1 text-xs rounded"
+                  >
+                    Ver
+                  </button>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-{adelantos.map((a) => (
-  <tr key={a.id} className="border-t hover:bg-gray-50">
-    <td className="py-2 px-4">{a.id}</td>
+          ))}
+        </tbody>
+      </table>
+    </div>
 
-    <td className="py-2 px-4 max-w-[180px] truncate" title={a.operarioNombre}>
-      {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
-    </td>
-
-    <td className="py-2 px-4 w-[120px] text-nowrap">
-      S/ {a.cantidad.toFixed(2)}
-    </td>
-
-    <td className="py-2 px-4 max-w-[180px] truncate" title={a.mensaje}>
-      {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
-    </td>
-
-    <td className="py-2 px-4">
-      {new Date(a.fechaHora).toLocaleString("es-PE", {
-        dateStyle: "short",
-        timeStyle: "short",
-      })}
-    </td>
-
-    <td className="py-2 px-4 w-[240px]">
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleEdit(a)}
-          className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
-        >
-          Editar
-        </button>
-
-        <button
-          onClick={() => handleDelete(a.id)}
-          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-        >
-          Eliminar
-        </button>
-
-        <button
-          onClick={() => setSelectedAdelanto(a)}
-          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-        >
-          Ver
-        </button>
-      </div>
-    </td>
-  </tr>
-))}
-
-
-
-          </tbody>
-        </table>
-      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">

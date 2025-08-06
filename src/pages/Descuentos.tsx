@@ -96,55 +96,56 @@ export default function Descuentos() {
   })
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Descuentos a Operarios</h1>
+  <div className="max-w-2xl mx-auto px-4 text-sm">
+    <h1 className="text-lg font-semibold mb-3">Descuentos a Operarios</h1>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+    {error && <p className="text-red-500 mb-3 whitespace-pre-line">{error}</p>}
 
-      {/* Selector de semanas */}
-      <div className="mb-4 flex items-center gap-4">
-        <div>
-          <label className="mr-2 font-semibold">Semana (Sábado - Viernes):</label>
-          <select
-            className="border px-2 py-1 rounded"
-            value={semanaSeleccionada}
-            onChange={(e) => setSemanaSeleccionada(e.target.value)}
-          >
-            {semanasUnicas.map((semana) => (
-              <option key={semana} value={semana}>
-                {semana}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-          onClick={handleEliminarSemana}
-          disabled={!semanaSeleccionada}
+    {/* Selector de semanas */}
+    <div className="mb-3 flex items-center gap-4">
+      <div>
+        <label className="mr-2 font-medium">Semana (Sábado - Viernes):</label>
+        <select
+          className="border px-2 py-1 rounded text-sm"
+          value={semanaSeleccionada}
+          onChange={(e) => setSemanaSeleccionada(e.target.value)}
         >
-          Eliminar descuentos de esta semana
-        </button>
+          {semanasUnicas.map((semana) => (
+            <option key={semana} value={semana}>
+              {semana}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white shadow rounded">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="py-2 px-4 text-left">Operario</th>
-              <th className="py-2 px-4 text-left">Total a Descontar</th>
-            </tr>
-          </thead>
-          <tbody>
-            {descuentosFiltrados.map((d) => (
-              <tr key={d.operarioId} className="border-t hover:bg-gray-50">
-                <td className="py-2 px-4">{d.nombreCompleto}</td>
-                <td className="py-2 px-4">S/ {d.totalDescuento.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <button
+        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+        onClick={handleEliminarSemana}
+        disabled={!semanaSeleccionada}
+      >
+        Eliminar descuentos de esta semana
+      </button>
     </div>
-  )
+
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white shadow rounded text-sm">
+        <thead className="bg-gray-200 text-gray-700">
+          <tr>
+            <th className="py-1.5 px-2 text-left">Operario</th>
+            <th className="py-1.5 px-2 text-left">Total a Descontar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {descuentosFiltrados.map((d) => (
+            <tr key={d.operarioId} className="border-t hover:bg-gray-50">
+              <td className="py-1.5 px-2">{d.nombreCompleto}</td>
+              <td className="py-1.5 px-2">S/ {d.totalDescuento.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)
+
 }

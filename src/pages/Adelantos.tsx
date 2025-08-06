@@ -167,233 +167,235 @@ export default function Adelantos() {
     }
   }
 
-  return (
-    <div className="max-w-5xl mx-auto px-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Listado de Adelantos</h1>
-        <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded">
-          Crear adelanto
-        </button>
-      </div>
-
-      {error && <p className="text-red-500 mb-4 whitespace-pre-line">{error}</p>}
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white shadow rounded">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="py-2 px-4">ID</th>
-              <th className="py-2 px-4">Usuario</th>
-              <th className="py-2 px-4">Operario</th>
-              <th className="py-2 px-4">Cantidad</th>
-              <th className="py-2 px-4">Mensaje</th>
-              <th className="py-2 px-4">Fecha</th>
-              <th className="py-2 px-4">Acciones</th>
-            </tr>
-          </thead>
-         <tbody>
-{adelantos.map((a) => (
-  <tr key={a.id} className="border-t hover:bg-gray-50">
-    <td className="py-2 px-4">{a.id}</td>
-
-    <td className="py-2 px-4 max-w-[180px] truncate" title={a.usuarioNombre}>
-      {a.usuarioNombre.length > 17 ? a.usuarioNombre.slice(0, 17) + "…" : a.usuarioNombre}
-    </td>
-
-    <td className="py-2 px-4 max-w-[180px] truncate" title={a.operarioNombre}>
-      {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
-    </td>
-
-    <td className="py-2 px-4 w-[120px] text-nowrap">
-      S/ {a.cantidad.toFixed(2)}
-    </td>
-
-    <td className="py-2 px-4 max-w-[180px] truncate" title={a.mensaje}>
-      {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
-    </td>
-
-    <td className="py-2 px-4">
-      {new Date(a.fechaHora).toLocaleString("es-PE", {
-        dateStyle: "short",
-        timeStyle: "short",
-      })}
-    </td>
-
-    <td className="py-2 px-4 w-[240px] flex gap-2">
+return (
+  <div className="max-w-5xl mx-auto px-4 text-sm">
+    <div className="flex justify-between items-center mb-3">
+      <h1 className="text-lg font-semibold">Listado de Adelantos</h1>
       <button
-        onClick={() => handleEdit(a)}
-        className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
+        onClick={() => setShowModal(true)}
+        className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
       >
-        Editar
+        Crear adelanto
       </button>
-      <button
-        onClick={() => handleDelete(a.id)}
-        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-      >
-        Eliminar
-      </button>
-      <button
-        onClick={() => setSelectedAdelanto(a)}
-        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-      >
-        Ver
-      </button>
-    </td>
-  </tr>
-))}
-
-</tbody>
-
-        </table>
-      </div>
-
-{showModal && (
-  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4">{editId ? "Editar Adelanto" : "Crear Adelanto"}</h2>
-
-      <form onSubmit={handleSubmit} className="grid gap-4">
-        {/* ✅ Mostrar mensaje general SOLO si no hay errores de campo */}
-        {error &&
-          !fieldErrors.usuarioId &&
-          !fieldErrors.operarioId &&
-          !fieldErrors.cantidad &&
-          !fieldErrors.mensaje && (
-            <p className="text-red-500 whitespace-pre-line">{error}</p>
-          )}
-
-        <div>
-          <select
-            value={usuarioId}
-            onChange={(e) => setUsuarioId(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.usuarioId ? "border-red-500" : ""}`}
-          >
-            <option value="">Seleccione un Usuario</option>
-            {usuarios.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.nombre}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.usuarioId && <p className="text-red-500 text-sm">{fieldErrors.usuarioId}</p>}
-        </div>
-
-        <div>
-          <select
-            value={operarioId}
-            onChange={(e) => setOperarioId(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.operarioId ? "border-red-500" : ""}`}
-          >
-            <option value="">Seleccione un Operario</option>
-            {operarios.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.nombre}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.operarioId && <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>}
-        </div>
-
-        <div>
-          <input
-            type="number"
-            placeholder="Cantidad"
-            value={cantidad}
-            onChange={(e) => setCantidad(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.cantidad ? "border-red-500" : ""}`}
-          />
-          {fieldErrors.cantidad && <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>}
-        </div>
-
-        <div>
-          <input
-            type="text"
-            placeholder="Mensaje"
-            value={mensaje}
-            onChange={(e) => setMensaje(e.target.value)}
-            className={`border p-2 rounded w-full ${fieldErrors.mensaje ? "border-red-500" : ""}`}
-          />
-          {fieldErrors.mensaje && <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>}
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-            {editId ? "Actualizar" : "Crear"}
-          </button>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
-)}{selectedAdelanto && (
-  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-    <div className="bg-white p-6 rounded-lg w-full max-w-2xl shadow-lg overflow-y-auto max-h-[90vh]">
-      <h2 className="text-xl font-bold mb-4">Detalle del Adelanto</h2>
-      
-      <div className="grid grid-cols-1 gap-3 text-sm select-text break-words">
-        <div>
-          <span className="font-semibold">ID:</span>{" "}
-          <span>{selectedAdelanto.id}</span>
-        </div>
-        <div>
-          <span className="font-semibold">Usuario:</span>{" "}
-          <span>{selectedAdelanto.usuarioNombre}</span>
-        </div>
-        <div>
-          <span className="font-semibold">Operario:</span>{" "}
-          <span>{selectedAdelanto.operarioNombre}</span>
-        </div>
-        <div>
-          <span className="font-semibold">Cantidad:</span>{" "}
-          <span>S/ {selectedAdelanto.cantidad.toFixed(2)}</span>
-        </div>
-        <div>
-          <span className="font-semibold">Mensaje:</span>{" "}
-          <span className="whitespace-pre-wrap break-words">{selectedAdelanto.mensaje}</span>
-        </div>
-        <div>
-          <span className="font-semibold">Fecha de creación:</span>{" "}
-          <span>
-            {new Date(selectedAdelanto.fechaHora).toLocaleString("es-PE", {
-              dateStyle: "short",
-              timeStyle: "short",
-            })}
-          </span>
-        </div>
-        <div>
-          <span className="font-semibold">Fecha de actualización:</span>{" "}
-          <span>
-            {selectedAdelanto.fechaActualizacion
-              ? new Date(selectedAdelanto.fechaActualizacion).toLocaleString("es-PE", {
+
+    {error && <p className="text-red-500 mb-3 whitespace-pre-line">{error}</p>}
+
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white shadow rounded text-sm">
+        <thead className="bg-gray-200 text-gray-700">
+          <tr>
+            <th className="py-1.5 px-2">ID</th>
+            <th className="py-1.5 px-2">Usuario</th>
+            <th className="py-1.5 px-2">Operario</th>
+            <th className="py-1.5 px-2">Cantidad</th>
+            <th className="py-1.5 px-2">Mensaje</th>
+            <th className="py-1.5 px-2">Fecha/Hora</th>
+            <th className="py-1.5 px-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {adelantos.map((a) => (
+            <tr key={a.id} className="border-t hover:bg-gray-50">
+              <td className="py-1.5 px-2">{a.id}</td>
+
+              <td className="py-1.5 px-2 max-w-[180px] truncate" title={a.usuarioNombre}>
+                {a.usuarioNombre.length > 17 ? a.usuarioNombre.slice(0, 17) + "…" : a.usuarioNombre}
+              </td>
+
+              <td className="py-1.5 px-2 max-w-[180px] truncate" title={a.operarioNombre}>
+                {a.operarioNombre.length > 17 ? a.operarioNombre.slice(0, 17) + "…" : a.operarioNombre}
+              </td>
+
+              <td className="py-1.5 px-2 w-[120px] text-nowrap">
+                S/ {a.cantidad.toFixed(2)}
+              </td>
+
+              <td className="py-1.5 px-2 max-w-[180px] truncate" title={a.mensaje}>
+                {a.mensaje.length > 17 ? a.mensaje.slice(0, 17) + "…" : a.mensaje}
+              </td>
+
+              <td
+                className="py-1.5 px-2 max-w-[100px] truncate"
+                title={new Date(a.fechaHora).toLocaleString("es-PE", {
                   dateStyle: "short",
                   timeStyle: "short",
-                })
-              : "Nunca modificado"}
-          </span>
+                })}
+              >
+                {new Date(a.fechaHora).toLocaleDateString("es-PE", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "2-digit",
+                })}
+              </td>
+
+              <td className="py-1.5 px-2 w-[240px] flex gap-2">
+                <button
+                  onClick={() => handleEdit(a)}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-white px-2.5 py-1 text-xs rounded"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(a.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 text-xs rounded"
+                >
+                  Eliminar
+                </button>
+                <button
+                  onClick={() => setSelectedAdelanto(a)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-2.5 py-1 text-xs rounded"
+                >
+                  Ver
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {showModal && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 text-sm">
+        <div className="bg-white p-5 rounded-lg w-full max-w-lg shadow-lg">
+          <h2 className="text-lg font-semibold mb-3">{editId ? "Editar Adelanto" : "Crear Adelanto"}</h2>
+
+          <form onSubmit={handleSubmit} className="grid gap-3">
+            {error &&
+              !fieldErrors.usuarioId &&
+              !fieldErrors.operarioId &&
+              !fieldErrors.cantidad &&
+              !fieldErrors.mensaje && (
+                <p className="text-red-500 whitespace-pre-line">{error}</p>
+              )}
+
+            <div>
+              <select
+                value={usuarioId}
+                onChange={(e) => setUsuarioId(e.target.value)}
+                className={`border p-2 rounded w-full ${fieldErrors.usuarioId ? "border-red-500" : ""}`}
+              >
+                <option value="">Seleccione un Usuario</option>
+                {usuarios.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.nombre}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.usuarioId && <p className="text-red-500 text-sm">{fieldErrors.usuarioId}</p>}
+            </div>
+
+            <div>
+              <select
+                value={operarioId}
+                onChange={(e) => setOperarioId(e.target.value)}
+                className={`border p-2 rounded w-full ${fieldErrors.operarioId ? "border-red-500" : ""}`}
+              >
+                <option value="">Seleccione un Operario</option>
+                {operarios.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.nombre}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.operarioId && <p className="text-red-500 text-sm">{fieldErrors.operarioId}</p>}
+            </div>
+
+            <div>
+              <input
+                type="number"
+                placeholder="Cantidad"
+                value={cantidad}
+                onChange={(e) => setCantidad(e.target.value)}
+                className={`border p-2 rounded w-full ${fieldErrors.cantidad ? "border-red-500" : ""}`}
+              />
+              {fieldErrors.cantidad && <p className="text-red-500 text-sm">{fieldErrors.cantidad}</p>}
+            </div>
+
+            <div>
+              <input
+                type="text"
+                placeholder="Mensaje"
+                value={mensaje}
+                onChange={(e) => setMensaje(e.target.value)}
+                className={`border p-2 rounded w-full ${fieldErrors.mensaje ? "border-red-500" : ""}`}
+              />
+              {fieldErrors.mensaje && <p className="text-red-500 text-sm">{fieldErrors.mensaje}</p>}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                {editId ? "Actualizar" : "Crear"}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="bg-gray-500 text-white px-3 py-1 rounded text-sm"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
       </div>
+    )}
 
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={() => setSelectedAdelanto(null)}
-          className="bg-gray-600 text-white px-4 py-2 rounded"
-        >
-          Cerrar
-        </button>
+    {selectedAdelanto && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4 text-sm">
+        <div className="bg-white p-6 rounded-lg w-full max-w-2xl shadow-lg overflow-y-auto max-h-[90vh]">
+          <h2 className="text-lg font-semibold mb-4">Detalle del Adelanto</h2>
+
+          <div className="grid grid-cols-1 gap-3 select-text break-words">
+            <div>
+              <span className="font-semibold">ID:</span> <span>{selectedAdelanto.id}</span>
+            </div>
+            <div>
+              <span className="font-semibold">Usuario:</span> <span>{selectedAdelanto.usuarioNombre}</span>
+            </div>
+            <div>
+              <span className="font-semibold">Operario:</span> <span>{selectedAdelanto.operarioNombre}</span>
+            </div>
+            <div>
+              <span className="font-semibold">Cantidad:</span> <span>S/ {selectedAdelanto.cantidad.toFixed(2)}</span>
+            </div>
+            <div>
+              <span className="font-semibold">Mensaje:</span>{" "}
+              <span className="whitespace-pre-wrap break-words">{selectedAdelanto.mensaje}</span>
+            </div>
+            <div>
+              <span className="font-semibold">Fecha de creación:</span>{" "}
+              <span>
+                {new Date(selectedAdelanto.fechaHora).toLocaleString("es-PE", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}
+              </span>
+            </div>
+            <div>
+              <span className="font-semibold">Fecha de actualización:</span>{" "}
+              <span>
+                {selectedAdelanto.fechaActualizacion
+                  ? new Date(selectedAdelanto.fechaActualizacion).toLocaleString("es-PE", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })
+                  : "Nunca modificado"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={() => setSelectedAdelanto(null)}
+              className="bg-gray-600 text-white px-3 py-1 rounded text-sm"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    )}
   </div>
-)}
+)
 
-
-
-
-    </div>
-  )
 }
