@@ -124,97 +124,106 @@ export default function Operarios() {
     setShowModal(true)
   }
 
-  return (
-    <div className="max-w-2xl mx-auto px-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Listado de Operarios</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Crear Operario
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <label className="block font-medium mb-1">Ordenar por:</label>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="border rounded px-3 py-2"
-        >
-          <option value="id">ID</option>
-          <option value="nombreCompleto">Nombre Completo</option>
-        </select>
-      </div>
-
-      {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
-
-      <table className="min-w-full bg-white shadow rounded">
-        <thead className="bg-gray-200 text-gray-700">
-          <tr>
-            <th className="py-2 px-4 text-left">ID</th>
-            <th className="py-2 px-4 text-left w-[300px]">Nombre Completo</th>
-            <th className="py-2 px-4 text-left">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {operarios.map((op) => (
-            <tr key={op.id} className="border-t hover:bg-gray-50">
-              <td className="py-2 px-4">{op.id}</td>
-              <td className="py-2 px-4">{op.nombreCompleto}</td>
-              <td className="py-2 px-4 flex gap-2">
-                <button
-                  onClick={() => handleEdit(op)}
-                  className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDelete(op.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">
-              {editId ? "Editar Operario" : "Crear Operario"}
-            </h2>
-
-            {error && <pre className="text-red-500 mb-4 whitespace-pre-line">{error}</pre>}
-
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <input
-                type="text"
-                placeholder="Nombre completo"
-                value={nombreCompleto}
-                onChange={(e) => setNombreCompleto(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <div className="flex justify-end gap-2">
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-                  {editId ? "Actualizar" : "Crear"}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+return (
+  <div className="max-w-2xl mx-auto px-4 text-sm">
+    <div className="flex justify-between items-center mb-3">
+      <h1 className="text-lg font-semibold">Listado de Operarios</h1>
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+      >
+        Crear Operario
+      </button>
     </div>
-  )
+
+    <div className="mb-3">
+      <label className="block font-medium mb-1">Ordenar por:</label>
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+        className="border rounded px-2 py-1 text-sm"
+      >
+        <option value="id">ID</option>
+        <option value="nombreCompleto">Nombre Completo</option>
+      </select>
+    </div>
+
+    {error && <pre className="text-red-500 mb-3 whitespace-pre-line">{error}</pre>}
+
+    <table className="min-w-full bg-white shadow rounded text-sm">
+      <thead className="bg-gray-200 text-gray-700">
+        <tr>
+          <th className="py-1.5 px-2 text-left">ID</th>
+          <th className="py-1.5 px-2 text-left w-[300px]">Nombre Completo</th>
+          <th className="py-1.5 px-2 text-left">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {operarios.map((op) => (
+          <tr key={op.id} className="border-t hover:bg-gray-50">
+            <td className="py-1.5 px-2">{op.id}</td>
+            <td className="py-1.5 px-2">{op.nombreCompleto}</td>
+            <td className="py-1.5 px-2 flex gap-2">
+              <button
+                onClick={() => handleEdit(op)}
+                className="bg-yellow-400 hover:bg-yellow-500 text-white px-2.5 py-1 text-xs rounded"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(op.id)}
+                className="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 text-xs rounded"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {/* Aquí puedes insertar la paginación */}
+    <div className="mt-4 flex justify-center items-center gap-2 text-sm">
+      {/* ejemplo de paginación simple */}
+      <button className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">Anterior</button>
+      <span>Página 1 de 3</span>
+      <button className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">Siguiente</button>
+    </div>
+
+    {showModal && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 text-sm">
+        <div className="bg-white p-5 rounded-lg w-full max-w-lg shadow-lg">
+          <h2 className="text-lg font-semibold mb-3">
+            {editId ? "Editar Operario" : "Crear Operario"}
+          </h2>
+
+          {error && <pre className="text-red-500 mb-3 whitespace-pre-line">{error}</pre>}
+
+          <form onSubmit={handleSubmit} className="grid gap-3">
+            <input
+              type="text"
+              placeholder="Nombre completo"
+              value={nombreCompleto}
+              onChange={(e) => setNombreCompleto(e.target.value)}
+              className="border p-2 rounded text-sm"
+            />
+            <div className="flex justify-end gap-2">
+              <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                {editId ? "Actualizar" : "Crear"}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="bg-gray-500 text-white px-3 py-1 rounded text-sm"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+)
+
 }
