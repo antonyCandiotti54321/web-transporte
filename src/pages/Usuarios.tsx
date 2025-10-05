@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 
 type Rol = "ADMIN" | "CHOFER"
@@ -39,37 +38,43 @@ export default function Usuarios() {
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState("")
 
-  // Usar useState para el token para que se actualice reactivamente
+  // Paginación
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [pageSize, setPageSize] = useState(10) // 👈 ahora controlas el tamaño de página
+
+  // Token
   const [token, setToken] = useState(localStorage.getItem("token") || "")
 
-  // Obtener información del usuario actual del token
   const getCurrentUserFromToken = () => {
     if (!token) return null
     return decodeToken(token)
   }
 
-  // Verificar si el usuario está editando su propio perfil
   const isEditingSelf = (editingUserId: number) => {
     const currentUser = getCurrentUserFromToken()
     if (!currentUser) return false
     return currentUser.userId === editingUserId
   }
 
-  const fetchUsuarios = async (tokenToUse: string = token) => {
+  const fetchUsuarios = async (pageNumber: number = page, tokenToUse: string = token, size: number = pageSize) => {
     try {
-      const res = await fetch("https://api-transporte-98xe.onrender.com/api/usuarios", {
-        headers: {
-          Authorization: `Bearer ${tokenToUse}`,
-        },
-      })
-      
+      const res = await fetch(
+        `https://api-transporte-98xe.onrender.com/api/usuarios?page=${pageNumber}&size=${size}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenToUse}`,
+          },
+        }
+      )
+
       if (res.status === 401 || res.status === 403) {
         localStorage.removeItem("token")
         setToken("")
         setError("Sesión expirada. Por favor, inicia sesión nuevamente.")
         return
       }
-      
+
       if (!res.ok) throw new Error("No se pudo obtener la lista de usuarios")
       const data = await res.json()
 
@@ -79,6 +84,8 @@ export default function Usuarios() {
             (u: Usuario) => u.rol === "CHOFER" || u.rol === "ADMIN"
           )
         )
+        setTotalPages(data.totalPages || 0)
+        setPage(data.pageable?.pageNumber || 0)
       } else {
         console.error("Formato inesperado de la API:", data)
         setUsuarios([])
@@ -89,10 +96,8 @@ export default function Usuarios() {
   }
 
   useEffect(() => {
-    if (token) {
-      fetchUsuarios()
-    }
-  }, [token])
+    if (token) fetchUsuarios()
+  }, [token, pageSize]) // 👈 cuando cambie el tamaño de página, recarga
 
   const resetForm = () => {
     setEditId(null)
@@ -108,37 +113,32 @@ export default function Usuarios() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-  
+
     if (!nombreCompleto || !username || !rol) {
       setError("Todos los campos son obligatorios")
       return
     }
-  
+
     const isEditing = !!editId
-  
+
     if (!isEditing && (!password || !repeatPassword)) {
       setError("Debes ingresar y repetir la contraseña al crear")
       return
     }
-  
+
     if ((password || repeatPassword) && password !== repeatPassword) {
       setError("Las contraseñas no coinciden")
       return
     }
-  
+
     const method = isEditing ? "PATCH" : "POST"
     const url = isEditing
       ? `https://api-transporte-98xe.onrender.com/api/usuarios/${editId}`
       : "https://api-transporte-98xe.onrender.com/api/auth/register"
-  
-    const payload: any = {
-      nombreCompleto,
-      username,
-      rol,
-    }
-  
+
+    const payload: any = { nombreCompleto, username, rol }
     if (password) payload.password = password
-  
+
     try {
       const res = await fetch(url, {
         method,
@@ -148,10 +148,9 @@ export default function Usuarios() {
         },
         body: JSON.stringify(payload),
       })
-  
+
       if (!res.ok) {
         const errorData = await res.json()
-        
         if (res.status === 400 && typeof errorData === 'object' && !errorData.error) {
           const errorMessages = Object.values(errorData).join('.\n') + '.'
           setError(errorMessages)
@@ -160,31 +159,27 @@ export default function Usuarios() {
         }
         return
       }
-  
+
       const data = await res.json().catch(() => ({}))
-  
+
       if (data.newToken) {
-        console.log("✅ Token renovado automáticamente:", data.message)
         setToken(data.newToken)
         localStorage.setItem("token", data.newToken)
-  
+
         const decoded = decodeToken(data.newToken)
         if (decoded?.nombreCompleto) {
           localStorage.setItem("nombreCompleto", decoded.nombreCompleto)
         }
-  
+
         alert(`✅ ${data.message}`)
-        setError("")
         resetForm()
-        await fetchUsuarios(data.newToken)
+        await fetchUsuarios(0, data.newToken, pageSize)
       } else {
         alert(`✅ Usuario actualizado correctamente`)
-        setError("")
         resetForm()
-        await fetchUsuarios()
+        await fetchUsuarios(page, token, pageSize)
       }
-  
-    } catch (err: any) {
+    } catch {
       setError("Error de conexión")
     }
   }
@@ -213,8 +208,8 @@ export default function Usuarios() {
         setError(errorData.error || "Error al eliminar usuario")
         return
       }
-      fetchUsuarios()
-    } catch (err: any) {
+      fetchUsuarios(page, token, pageSize)
+    } catch {
       setError("Error de conexión al eliminar")
     }
   }
@@ -225,7 +220,10 @@ export default function Usuarios() {
     <div className="max-w-2xl mx-auto px-4 text-sm">
       <div className="flex justify-between items-center mb-3">
         <h1 className="text-lg font-semibold">Usuarios (CHOFER y ADMIN)</h1>
-        <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-3 py-1 rounded">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-blue-600 text-white px-3 py-1 rounded"
+        >
           Crear usuario
         </button>
       </div>
@@ -279,6 +277,55 @@ export default function Usuarios() {
         </table>
       </div>
 
+      {/* Paginación */}
+      <div className="flex flex-col items-center gap-2 mt-4">
+        {/* Selector de tamaño de página */}
+        <div className="flex items-center gap-2">
+          <span>Tamaño por página:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="border rounded p-1"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+
+        {/* Botones de paginación */}
+        <div className="flex justify-center items-center gap-2">
+          <button
+            disabled={page === 0}
+            onClick={() => fetchUsuarios(page - 1, token, pageSize)}
+            className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => fetchUsuarios(i, token, pageSize)}
+              className={`px-3 py-1 rounded ${
+                i === page ? "bg-blue-600 text-white" : "bg-gray-200"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={page === totalPages - 1}
+            onClick={() => fetchUsuarios(page + 1, token, pageSize)}
+            className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 text-sm">
           <div className="bg-white p-5 rounded-lg w-full max-w-lg shadow-lg">
